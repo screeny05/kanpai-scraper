@@ -1,0 +1,20 @@
+{
+  "name": "@screeny05/kanpai",
+  "version": "0.1.0",
+  "description": "Declarative web-scraper.",
+  "main": "dist/index.js",
+  "author": "Sebastian Langer <sl@scn.cx>",
+  "license": "MIT",
+  "dependencies": {
+    "css-select": "^2.0.2",
+    "domelementtype": "^1.3.1",
+    "map-obj": "^2.0.0",
+    "parse5": "^5.1.0",
+    "parse5-htmlparser2-tree-adapter": "^5.1.0",
+    "typescript": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.2",
+    "@types/parse5-htmlparser2-tree-adapter": "^5.0.1"
+  }
+}
