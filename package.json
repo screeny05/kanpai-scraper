@@ -1,6 +1,6 @@
 {
   "name": "kanpai-scraper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Declarative web-scraper.",
   "main": "dist/index.js",
   "author": "Sebastian Langer <sl@scn.cx>",
@@ -16,9 +16,6 @@
   "devDependencies": {
     "@types/node": "^12.0.2",
     "@types/parse5-htmlparser2-tree-adapter": "^5.0.1"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
