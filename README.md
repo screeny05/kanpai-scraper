@@ -5,7 +5,7 @@ This library uses [parse5](https://github.com/inikulin/parse5) and [Typescript](
 
 ## Installation
 ```
-npm install @screeny05/kanpai-scraper
+npm install kanpai-scraper
 ```
 
 ## Getting started
