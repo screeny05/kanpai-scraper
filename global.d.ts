@@ -1,5 +1,5 @@
-type Htmlparser2Element = import("parse5-htmlparser2-tree-adapter").Element;
-type Htmlparser2Node = import("parse5-htmlparser2-tree-adapter").Node;
+type Htmlparser2Element = import('parse5-htmlparser2-tree-adapter').Element;
+type Htmlparser2Node = import('parse5-htmlparser2-tree-adapter').Node;
 
 declare module 'domelementtype' {
     export const Text: string;

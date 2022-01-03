@@ -20,3 +20,12 @@ executeKanpai(html, {
     }]
 });
 ```
+
+Or using the Kanpai-DSL
+```
+name: .category-name;
+products[]: .product-box {
+    name: .product-box--name;
+    price: $ | [data-price] | number;
+}
+```
