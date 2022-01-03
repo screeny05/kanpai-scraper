@@ -1,0 +1,71 @@
+parks: table .bg_color_mblue |> {
+    ccId: .park |> attr('data-id') |> number;
+    name: .park |> innerText;
+    coasters[]: selectCoasterFromPark() |> {
+        name: .coaster |> innerText;
+        ccId: .coaster |> attr('data-id');
+        identicals: .identicals |> innerText;
+        rcdbId: td:first-child a[href*="rcdb.com"] |> attr('href') |> number;
+    }
+}
+
+/*
+https://portia.readthedocs.io/en/latest/index.html
+https://www.import.io/
+https://app.zyte.com/account/signup/automatic-extraction
+https://parsel.readthedocs.io/en/latest/usage.html
+https://docs.scrapy.org/en/latest/topics/selectors.html
+https://www.datacamp.com/community/tutorials/making-web-crawlers-scrapy-python
+https://webscraper.io/
+https://github.com/mwojnars/nifty#:~:text=Web%20access%20and%20web%20scraping%20tools%20in%20nifty.web%20and%20nifty.redex%3A
+*/
+
+
+/* https://books.toscrape.com/catalogue/the-requiem-red_995/index.html */
+
+@breadcrumb-selector: .breadcrumb li;
+
+$breadcrumb: {
+	elements: .breadcrumb li |> {
+		title: $ |> innerText;
+		url: $ |> attr('href') |> resolveUrl;
+	};
+}
+
+fragment product-pod {
+	title: h3 a |> attr('title');
+	image: .image_container img |> attr('src') |> resolveUrl;
+	url: .image_container a |> attr('href') |> resolveUrl;
+	rating: .star-rating |> attr('class') |> lowercase |> extract('/(one|two|three|four|five)/') |> match({ one: 1, two: 2, three: 3, four: 4, five: 5 });
+	price: .product_price .price_color |> innerText |> extract('/(\\d+[.,]?\\d+?)/') |> number;
+	currency: .product_price .price_color |> innerText |> extract('/([£$€])/');
+	isInstock: .instock [class*='icon-'] |> attr('class') |> extract('/icon-(\\w)/') |> match({ ok: true, else: false });
+}
+
+$listing: {
+	title: .page-header |> innerText;
+	categoryPath: $ |> $breadcrumb |> pick('elements');
+	resultsTotal: .page-header + form strong:first |> innerText |> number;
+	resultsCurrentStart: .page-header + form strong:eq(1) |> innerText |> number;
+	resultsCurrentEnd: .page-header + form strong:eq(2) |> innerText |> number;
+	resultsCurrentPage: .pager .current |> innerText |> extract('/Page (\\d+)/') |> number;
+	resultsPageCount: .pager .current |> innerText |> extract('/of (\\d+)/') |> number;
+	nextLink: .pager .next a |> attr('href') |> follow($listing);
+	products[]: .product_pod |> $product-pod;
+}
+
+$detail: {
+	title: .product_main h1 |> innerText;
+	categoryPath: $ |> $breadcrumb;
+	price: .product_main .price_color |> innerText |> extract('/(\\d+[.,]?\\d+?)/') |> number;
+	currency: .product_main .price_color |> innerText |> extract('/([£$€])/');
+	instock: .product_main .instock.availability |> innerText |> extract('/\\((\\d+) available\\)/') |> number;
+	isInstock: .product_main .instock [class*='icon-'] |> attr('class') |> extract('/icon-(\\w)/') |> match({ ok: true, else: false });
+	rating: .product_main .star-rating |> attr('class') |> lowercase |> extract('/(one|two|three|four|five)/') |> match({ one: 1, two: 2, three: 3, four: 4, five: 5 });
+	reviewCount: .product_main .star-rating small |> innerText |> extract('/$(\\d+)/') |> number;
+	description: #product_description + p |> innerText;
+	information: .sub-header:contains(Product Information) + table tr |> {
+		key: th |> innerText;
+		value: td |> innerText;
+	} |> keyValueToObject;
+}

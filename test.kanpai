@@ -1,0 +1,10 @@
+parks[]: table .bg_color_mblue {
+    ccId: .park | [data-id] | number;
+    name: .park;
+    coasters[]: selectCoasterFromPark() {
+        name: .coaster;
+        ccId: .coaster | [data-id];
+        identicals: .identicals;
+        rcdbId: td:first-child a[href*="rcdb.com"] | [href] | number;
+    }
+}
