@@ -2,7 +2,9 @@ import { parse } from 'parse5';
 import { Element, Node, TextNode } from 'parse5-htmlparser2-tree-adapter';
 import * as htmlparser2Adapter from 'parse5-htmlparser2-tree-adapter';
 import { Text, CDATA, isTag } from 'domelementtype';
-import { selectAll, compile as compileQuery, is as matchesSelector } from 'css-select';
+import { compile as compileQuery, is as matchesSelector } from 'css-select';
+import {select as cheerioSelectAll} from 'cheerio-select'
+
 
 const isTextNode = (el: Node): el is TextNode => el.type === Text;
 const isCdata = (el: Node): el is Element => el.type === CDATA;
@@ -12,7 +14,7 @@ export class Context {
 
     constructor(html: string | Element | Element[]){
         if(typeof html === 'string'){
-            this.document = <Element>parse(html, { treeAdapter: htmlparser2Adapter });
+            this.document = parse(html, { treeAdapter: htmlparser2Adapter }) as Element;
         } else {
             this.document = html;
         }
@@ -23,7 +25,7 @@ export class Context {
     }
 
     select(selector: string){
-        return new Context(selectAll(selector, this.document));
+        return new Context(cheerioSelectAll(selector, this.document as any) as Element[]);
     }
 
     eq(index: number): Element {

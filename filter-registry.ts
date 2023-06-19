@@ -4,10 +4,14 @@ interface KanpaiFilterMap {
     [key: string]: KanpaiFilterFunction;
 }
 
-export const FilterRegistry: KanpaiFilterMap = {
+const InternalFilterRegistry = {
     date: (value: string) => new Date(value),
-    number: (value: string) => Number.parseFloat(value)
-}
+    number: (value: string) => Number.parseFloat(value),
+    trim: (value: string) => value.trim(),
+} as const
+
+export type BuiltinFilterKey = keyof typeof InternalFilterRegistry;
+export const FilterRegistry: KanpaiFilterMap = InternalFilterRegistry;
 
 export const registerFilter = (name: string, filter: KanpaiFilterFunction): void => {
     FilterRegistry[name] = filter;
@@ -21,4 +25,8 @@ export const executeFilter = (value: string, filter: KanpaiFilter) => {
     }
 
     return filterFn(value);
+}
+
+export const executeFilterChain = (value: string, filters: KanpaiFilter[]) => {
+    return filters.reduce((value: string, filter) => executeFilter(value, filter), value);
 }

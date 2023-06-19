@@ -1,6 +1,6 @@
 import mapObject from 'map-obj';
 import { Context } from './context';
-import { executeFilter } from './filter-registry';
+import { BuiltinFilterKey, executeFilterChain } from './filter-registry';
 
 export { registerFilter } from './filter-registry';
 export { Context as KanpaiContext } from './context';
@@ -10,10 +10,10 @@ export type KanpaiSelectorFunction = (context: Context) => Context;
 export type KanpaiSelector = string | KanpaiSelectorFunction;
 
 export type KanpaiFilterFunction = (value: string) => any;
-export type KanpaiFilter = string | KanpaiFilterFunction;
+export type KanpaiFilter = string | BuiltinFilterKey | KanpaiFilterFunction;
 
 export type KanpaiIterator = [KanpaiSelector, KanpaiCollection | KanpaiElement];
-export type KanpaiElement = KanpaiSelector | [KanpaiSelector, string] | [KanpaiSelector, string, KanpaiFilter];
+export type KanpaiElement = KanpaiSelector | [KanpaiSelector, string] | [KanpaiSelector, string, KanpaiFilter] | [KanpaiSelector, string, KanpaiFilter, KanpaiFilter] | [KanpaiSelector, string, KanpaiFilter, KanpaiFilter, KanpaiFilter];
 export type KanpaiExecutable = KanpaiIterator | KanpaiCollection | KanpaiElement;
 
 export interface KanpaiCollection {
@@ -62,7 +62,7 @@ const isKanpaiCollection = (argument: KanpaiExecutable): argument is KanpaiColle
  * @param property
  */
 const getPropertyValue = (context: Context, property: string = 'text'): string => {
-    if(property === 'text'){
+    if(property === 'text' || !property){
         return context.text();
     }
 
@@ -85,7 +85,7 @@ const executeElement = (context: Context, selection: KanpaiElement, options: Kan
     if(!Array.isArray(selection)){
         selection = [selection, 'text'];
     }
-    const [selector, property, filter = null] = selection;
+    const [selector, property, ...filters] = selection;
 
     // Allow user to pass $ for referencing the current context itself
     const element = selector === '$' ? context : executeSelector(context, selector);
@@ -94,14 +94,14 @@ const executeElement = (context: Context, selection: KanpaiElement, options: Kan
     }
 
     const value = getPropertyValue(element, property);
-    if(filter){
+    if(filters.length > 0){
         /**
          * Seems there is a typescript bug:
          * `filter` is reported as being `string | KanpaiSelectorFunction | KanpaiFilterFunction`
          * While it clearly has to be `KanpaiFilter`, as `selection` is of type
          * `[KanpaiSelector, string] | [KanpaiSelector, string, KanpaiFilter]`
          */
-        return executeFilter(value, <KanpaiFilter>filter);
+        return executeFilterChain(value, filters);
     }
 
     return value;
@@ -130,11 +130,15 @@ const executeExecutable = (context: Context, argument: KanpaiExecutable, options
     throw new TypeError(`Given argument ${JSON.stringify(argument)} is not valid.`);
 }
 
-export function executeKanpai<T>(context: Context, config: KanpaiExecutable, options: Partial<KanpaiOptions> = {}): T {
+export function executeKanpai<T>(context: Context | string, config: KanpaiExecutable, options: Partial<KanpaiOptions> = {}): T {
     const _options: KanpaiOptions = {
         strict: true,
         ...options
     };
+
+    if(typeof context === 'string'){
+        context = new Context(context);
+    }
 
     return executeExecutable(context, config, _options);
 };
