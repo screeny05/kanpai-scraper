@@ -5,15 +5,18 @@ import { BuiltinFilterKey, executeFilterChain } from './filter-registry';
 export { registerFilter } from './filter-registry';
 export { Context as KanpaiContext } from './context';
 export { kanpaiHttp } from './http';
+export { getText } from './get-text';
 
 export type KanpaiSelectorFunction = (context: Context) => Context;
 export type KanpaiSelector = string | KanpaiSelectorFunction;
 
 export type KanpaiFilterFunction = (value: string) => any;
 export type KanpaiFilter = string | BuiltinFilterKey | KanpaiFilterFunction;
+export type KanpaiGetterFunction = (value: Context) => any;
+export type KanpaiGetter = string | KanpaiGetterFunction;
 
 export type KanpaiIterator = [KanpaiSelector, KanpaiCollection | KanpaiElement];
-export type KanpaiElement = KanpaiSelector | [KanpaiSelector, string] | [KanpaiSelector, string, KanpaiFilter] | [KanpaiSelector, string, KanpaiFilter, KanpaiFilter] | [KanpaiSelector, string, KanpaiFilter, KanpaiFilter, KanpaiFilter];
+export type KanpaiElement = KanpaiSelector | [KanpaiSelector, KanpaiGetter] | [KanpaiSelector, KanpaiGetter, KanpaiFilter] | [KanpaiSelector, KanpaiGetter, KanpaiFilter, KanpaiFilter] | [KanpaiSelector, KanpaiGetter, KanpaiFilter, KanpaiFilter, KanpaiFilter];
 export type KanpaiExecutable = KanpaiIterator | KanpaiCollection | KanpaiElement;
 
 export interface KanpaiCollection {
@@ -61,9 +64,16 @@ const isKanpaiCollection = (argument: KanpaiExecutable): argument is KanpaiColle
  * @param context
  * @param property
  */
-const getPropertyValue = (context: Context, property: string = 'text'): string => {
+const getPropertyValue = (context: Context, property: KanpaiGetter = 'text'): string => {
+    if(typeof property === 'function'){
+        return property(context);
+    }
+
     if(property === 'text' || !property){
         return context.text();
+    }
+    if(property === 'textBroken'){
+        return context.text(true);
     }
 
     const match = property.match(ATTRIBUTE_REGEX);

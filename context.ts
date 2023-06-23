@@ -1,13 +1,10 @@
 import { parse } from 'parse5';
-import { Element, Node, TextNode } from 'parse5-htmlparser2-tree-adapter';
+import { Element, Node } from 'parse5-htmlparser2-tree-adapter';
 import * as htmlparser2Adapter from 'parse5-htmlparser2-tree-adapter';
-import { Text, CDATA, isTag } from 'domelementtype';
+import { isTag } from 'domelementtype';
 import { compile as compileQuery, is as matchesSelector } from 'css-select';
 import {select as cheerioSelectAll} from 'cheerio-select'
-
-
-const isTextNode = (el: Node): el is TextNode => el.type === Text;
-const isCdata = (el: Node): el is Element => el.type === CDATA;
+import { getText } from './get-text';
 
 export class Context {
     document: Element | Element[];
@@ -106,28 +103,20 @@ export class Context {
         this.document.forEach(element => fn(element));
     }
 
+    filter(fn: (element: Element) => boolean): Context {
+        if(!Array.isArray(this.document)){
+            return fn(this.document) ? this : new Context([]);
+        }
+        return new Context(this.document.filter(fn));
+    }
+
     index(): number {
         const el = this.eq(0);
         return el.parent.children.filter(node => isTag(node)).indexOf(el);
     }
 
-    text(){
-        const getText = (el: Element | Node | Node[]): string => {
-            if(Array.isArray(el)){
-                return el.map(getText).join('');
-            }
-            if(isTag(el)){
-                return el.name === 'br' ? '\n' : getText(el.children);
-            }
-            if(isTextNode(el)){
-                return el.data;
-            }
-            if(isCdata(el)){
-                return getText(el.children);
-            }
-            return '';
-        }
-        return getText(this.document);
+    text(linebreakBetweenNodes = false): string {
+        return getText(this.document, linebreakBetweenNodes);
     }
 
     attr(name: string){
