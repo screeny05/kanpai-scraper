@@ -8,7 +8,8 @@ const InternalFilterRegistry = {
     date: (value: string) => new Date(value),
     number: (value: string) => Number.parseFloat(value),
     trim: (value: string) => value.trim(),
-    undefinedIfFalsy: (value: string) => value || undefined
+    undefinedIfFalsy: (value: string) => value || undefined,
+    isTruthy: (value: string) => !!value,
 } as const
 
 export type BuiltinFilterKey = keyof typeof InternalFilterRegistry;

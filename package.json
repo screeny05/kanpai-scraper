@@ -1,6 +1,6 @@
 {
   "name": "kanpai-scraper",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Declarative web-scraper.",
   "main": "dist/index.js",
   "author": "Sebastian Langer <sl@scn.cx>",
